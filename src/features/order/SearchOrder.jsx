@@ -1,8 +1,8 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 export default function SearchOrder() {
-  const [value, setValue] = useState("");
+  const [value, setValue] = useState('');
   const navigate = useNavigate();
 
   const handleSubmit = (e) => {
@@ -10,7 +10,7 @@ export default function SearchOrder() {
     if (!value) return;
     navigate(`order/${value}`);
 
-    setValue("");
+    setValue('');
   };
 
   return (
