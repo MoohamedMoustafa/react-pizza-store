@@ -38,3 +38,5 @@ const userSlice = createSlice({
 
 export default userSlice.reducer;
 export const { setUser } = userSlice.actions;
+
+export const userSelector = (store) => store.user.userName;

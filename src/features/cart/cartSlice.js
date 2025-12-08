@@ -69,7 +69,8 @@ export const {
 //   },
 // );
 
-const cartSelector = (state) => state.cart.cart;
+export const cartSelector = (state) => state.cart.cart;
+
 const createCartTotalSelector = (key) =>
   createSelector([cartSelector], (cart) =>
     cart.reduce((acc, item) => acc + item[key], 0),
