@@ -31,7 +31,7 @@ const userSlice = createSlice({
   initialState,
   reducers: {
     setUser(state, action) {
-      state.userName = action.payload.userName;
+      state.userName = action.payload;
     },
   },
 });
