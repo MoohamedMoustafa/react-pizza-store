@@ -2,9 +2,9 @@ import { useState } from 'react';
 import { Form, redirect, useActionData, useNavigation } from 'react-router-dom';
 import { createOrder } from '../../services/apiRestaurant';
 import Button from '../../ui/Button';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { cartSelector, clearCart, getTotalCartPrice } from '../cart/cartSlice';
-import { userSelector } from '../user/userSlice';
+import { fetchAddressThunk, userSelector } from '../user/userSlice';
 import EmptyCart from './../cart/EmptyCart';
 import store from './../../store';
 import { formatCurrency } from '../../utils/helpers';
@@ -15,35 +15,12 @@ const isValidPhone = (str) =>
     str,
   );
 
-const fakeCart = [
-  {
-    pizzaId: 12,
-    name: 'Mediterranean',
-    quantity: 2,
-    unitPrice: 16,
-    totalPrice: 32,
-  },
-  {
-    pizzaId: 6,
-    name: 'Vegetale',
-    quantity: 1,
-    unitPrice: 13,
-    totalPrice: 13,
-  },
-  {
-    pizzaId: 11,
-    name: 'Spinach and Mushroom',
-    quantity: 1,
-    unitPrice: 15,
-    totalPrice: 15,
-  },
-];
-
 function CreateOrder() {
   const navigation = useNavigation();
   const isSubmitting = navigation.state === 'submitting';
   const formErrors = useActionData();
   const userName = useSelector(userSelector);
+  const dispatch = useDispatch();
 
   const [withPriority, setWithPriority] = useState(false);
   const cart = useSelector(cartSelector);
@@ -51,12 +28,15 @@ function CreateOrder() {
   const priorityPrice = withPriority ? 0.2 * totalCartPrice : 0;
   const totalPrice = totalCartPrice + priorityPrice;
 
+  const handleGetLocation = () => dispatch(fetchAddressThunk());
+
   if (!cart.length) return <EmptyCart />;
 
   return (
     <div className="px-4 py-6">
       <h2 className="mb-8 text-xl font-semibold">Ready to order? Let's go!</h2>
 
+      <button onClick={handleGetLocation}>Get Address</button>
       {/* <Form method="POST" action="/order/new"> */}
       <Form method="POST">
         <div className="mb-5 flex flex-col gap-2 sm:flex-row sm:items-center">
