@@ -4,7 +4,12 @@ import { createOrder } from '../../services/apiRestaurant';
 import Button from '../../ui/Button';
 import { useDispatch, useSelector } from 'react-redux';
 import { cartSelector, clearCart, getTotalCartPrice } from '../cart/cartSlice';
-import { fetchAddressThunk, userSelector } from '../user/userSlice';
+import {
+  // addressSelector,
+  fetchAddressThunk,
+  userObjectSelector,
+  // userSelector,
+} from '../user/userSlice';
 import EmptyCart from './../cart/EmptyCart';
 import store from './../../store';
 import { formatCurrency } from '../../utils/helpers';
@@ -19,16 +24,25 @@ function CreateOrder() {
   const navigation = useNavigation();
   const isSubmitting = navigation.state === 'submitting';
   const formErrors = useActionData();
-  const userName = useSelector(userSelector);
+  // const userName = useSelector(userSelector);
   const dispatch = useDispatch();
 
   const [withPriority, setWithPriority] = useState(false);
   const cart = useSelector(cartSelector);
   const totalCartPrice = useSelector(getTotalCartPrice);
+  // const address = useSelector(addressSelector);
+
+  const { userName, status, address, position, error } =
+    useSelector(userObjectSelector);
+  const isLoadingAddress = status === 'loading';
+
   const priorityPrice = withPriority ? 0.2 * totalCartPrice : 0;
   const totalPrice = totalCartPrice + priorityPrice;
 
-  const handleGetLocation = () => dispatch(fetchAddressThunk());
+  const handleGetLocation = (e) => {
+    e.preventDefault();
+    dispatch(fetchAddressThunk());
+  };
 
   if (!cart.length) return <EmptyCart />;
 
@@ -36,7 +50,6 @@ function CreateOrder() {
     <div className="px-4 py-6">
       <h2 className="mb-8 text-xl font-semibold">Ready to order? Let's go!</h2>
 
-      <button onClick={handleGetLocation}>Get Address</button>
       {/* <Form method="POST" action="/order/new"> */}
       <Form method="POST">
         <div className="mb-5 flex flex-col gap-2 sm:flex-row sm:items-center">
@@ -62,16 +75,34 @@ function CreateOrder() {
           </div>
         </div>
 
-        <div className="mb-5 flex flex-col gap-2 sm:flex-row sm:items-center">
+        <div className="relative mb-5 flex flex-col gap-2 sm:flex-row sm:items-center">
           <label className="sm:basis-40">Address</label>
           <div className="grow">
             <input
               className="input w-full"
               type="text"
               name="address"
+              defaultValue={address}
+              disabled={isLoadingAddress}
               required
             />
+            {status === 'error' && (
+              <p className="mt-2 rounded-md bg-red-100 p-2 text-xs text-red-700">
+                {error}
+              </p>
+            )}
           </div>
+          {!address && (
+            <span className="top-5px absolute right-[3px] top-[5px] z-10">
+              <Button
+                type="small"
+                onClick={handleGetLocation}
+                disabled={isLoadingAddress}
+              >
+                Get Address
+              </Button>
+            </span>
+          )}
         </div>
 
         <div className="mb-12 flex items-center gap-5">
@@ -90,7 +121,16 @@ function CreateOrder() {
 
         <div>
           <input type="hidden" name="cart" value={JSON.stringify(cart)} />
-          <Button disabled={isSubmitting} type="primary">
+          <input
+            type="hidden"
+            name="position"
+            value={
+              position.latitude && position.latitude
+                ? `${position.latitude},${position.longitude}`
+                : ''
+            }
+          />
+          <Button disabled={isSubmitting || isLoadingAddress} type="primary">
             {isSubmitting
               ? 'Placing order....'
               : `Order now ${formatCurrency(totalPrice)}`}
@@ -120,14 +160,8 @@ export async function action({ request }) {
 
   // If everything is okay, create new order and redirect
 
-  // await createOrder(order).then((res) => {
-  //   console.log('response', res);
-  //   return redirect(`/order/${res.id}`);
-  // });
-
   try {
     const res = await createOrder(order);
-    console.log('res', res);
     store.dispatch(clearCart());
 
     return redirect(`/order/${res.id}`);

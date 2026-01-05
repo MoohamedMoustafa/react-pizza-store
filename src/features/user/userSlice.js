@@ -61,4 +61,6 @@ const userSlice = createSlice({
 export default userSlice.reducer;
 export const { setUser } = userSlice.actions;
 
+export const userObjectSelector = (store) => store.user;
 export const userSelector = (store) => store.user.userName;
+export const addressSelector = (store) => store.user.address;
