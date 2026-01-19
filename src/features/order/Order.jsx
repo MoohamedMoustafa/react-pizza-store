@@ -31,7 +31,6 @@ function Order() {
   useEffect(() => {
     if (!fetcher.data && fetcher.state === 'idle') fetcher.load('/menu');
   }, [fetcher, order.status]);
-  console.log('fetcher data', fetcher.data);
 
   return (
     <div className="space-y-8 px-4 py-6">
